@@ -1,0 +1,35 @@
+services:
+  postgres:
+    image: postgres
+    restart: always
+    environment:
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: thisisnotgoingtobeexposed
+      POSTGRES_DB: climate_store
+    volumes:
+      - /var/lib/postgresql/data:/var/lib/postgresql/data
+    expose:
+      - "5432"
+    networks:
+      - climate_network
+
+  climate_store:
+    depends_on:
+        -  redis
+        -  worker
+    container_name: climate_store
+    build: .
+    environment:
+      - GOOGLE_SERVICE_ACCOUNT_EMAIL=${GOOGLE_SERVICE_ACCOUNT_EMAIL}
+      - GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY=${GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY}
+      - DATABASE_URL=postgresql://root:thisisnotgoingtobeexposed@postgres:5432/climate_store
+    ports:
+      - "8000:8000"
+    command: /app/.venv/bin/climate_store serve
+    working_dir: /
+    networks:
+      - climate_network
+
+networks:
+  climate-network:
+    driver: bridge
