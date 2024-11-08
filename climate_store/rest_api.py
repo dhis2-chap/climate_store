@@ -1,14 +1,13 @@
 from fastapi import FastAPI
 from starlette.middleware.cors import CORSMiddleware
 from .gee_interface import fetch_era5_data
+from .tables import create_db_and_tables
 
 
 def get_app():
     app = FastAPI(root_path="/v1")
     origins = [
         "*",  # Allow all origins
-        "http://localhost:3000",
-        "localhost:3000",
     ]
     app.add_middleware(
         CORSMiddleware,
@@ -22,6 +21,12 @@ def get_app():
 
 
 app = get_app()
+
+
+@app.on_event("startup")
+def on_startup():
+    create_db_and_tables()
+
 
 climate_data = app.get("/climate_data")(fetch_era5_data)
 

@@ -1,4 +1,6 @@
 import os
+from typing import Literal
+
 import ee
 from pydantic_geojson import FeatureCollectionModel
 from pydantic import BaseModel
@@ -7,6 +9,8 @@ from dotenv import load_dotenv, find_dotenv
 import logging
 
 logger = logging.getLogger(__name__)
+
+Aggregation = Literal["mean", "sum", "median", "min", "max"]
 
 
 class PeriodRange(BaseModel):
@@ -24,6 +28,8 @@ class ERA5Entry(BaseModel):
     period: str
     band: str
     value: float
+    temporal_aggregation: Aggregation
+    spatial_aggregation: Aggregation
 
 
 def load_credentials() -> GEECredentials:
